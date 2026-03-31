@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laser Studio — Calculadora de Costos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0d0b;
+    --surface: #1a1814;
+    --surface2: #252219;
+    --border: #3a3428;
+    --accent: #e8c87a;
+    --accent2: #c97d4e;
+    --accent3: #7ab8a0;
+    --text: #f0ead8;
+    --text-muted: #8a7f6a;
+    --text-dim: #5a5244;
+    --danger: #c96060;
+    --success: #7ab8a0;
+    --radius: 12px;
+    --radius-lg: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: linear-gradient(135deg, #1a1814 0%, #0e0d0b 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .logo-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .logo-text p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ─── NAV TABS ─── */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .nav-tab {
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .nav-tab:hover:not(.active) {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── SECTION TITLE ─── */
+  .section-header {
+    margin-bottom: 24px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .section-header p {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ─── CARDS / PANELS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title span { font-size: 18px; }
+
+  /* ─── GRID ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 900px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .header { flex-direction: column; gap: 14px; }
+    .nav-tabs { flex-wrap: wrap; }
+  }
+
+  /* ─── FORM FIELDS ─── */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .field-wrap .prefix,
+  .field-wrap .suffix {
+    position: absolute;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    pointer-events: none;
+    top: 50%; transform: translateY(-50%);
+  }
+  .field-wrap .prefix { left: 12px; }
+  .field-wrap .suffix { right: 12px; }
+  .field-wrap input[type=number],
+  .field-wrap input[type=text],
+  .field-wrap select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .field-wrap input::-webkit-outer-spin-button,
+  .field-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .field-wrap.has-prefix input { padding-left: 28px; }
+  .field-wrap.has-suffix input { padding-right: 32px; }
+  .field-wrap input:focus,
+  .field-wrap select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,200,122,0.1);
+  }
+  select option { background: var(--surface2); }
+
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    min-height: 70px;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  /* ─── RESULT BOXES ─── */
+  .result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+  }
+  .result-box .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .result-box .value {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .result-box .sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .result-box.highlight {
+    background: linear-gradient(135deg, rgba(232,200,122,0.12), rgba(201,125,78,0.08));
+    border-color: var(--accent);
+  }
+  .result-box.highlight .value { font-size: 32px; }
+  .result-box.success {
+    border-color: var(--accent3);
+  }
+  .result-box.success .value { color: var(--accent3); }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .btn-primary:hover { background: #f0d490; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .btn-danger:hover { background: rgba(201,96,96,0.12); }
+  .btn-success {
+    background: var(--accent3);
+    color: var(--bg);
+  }
+  .btn-success:hover { opacity: 0.9; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  /* ─── COST BREAKDOWN TABLE ─── */
+  .breakdown {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .breakdown tr { border-bottom: 1px solid rgba(58,52,40,0.5); }
+  .breakdown tr:last-child { border-bottom: none; }
+  .breakdown td {
+    padding: 9px 4px;
+    font-size: 13px;
+  }
+  .breakdown td:last-child {
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+  }
+  .breakdown .bd-category {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding-top: 14px;
+  }
+  .breakdown .bd-total td {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 14px;
+    padding-top: 12px;
+  }
+
+  /* ─── PROJECT CARDS ─── */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .project-card .pc-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .project-card .pc-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+  }
+  .project-card .pc-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--accent3);
+  }
+  .project-card .pc-cost {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .project-card .pc-actions {
+    position: absolute;
+    top: 14px; right: 14px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .project-card:hover .pc-actions { opacity: 1; }
+  .pc-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 8px;
+    background: rgba(122,184,160,0.15);
+    color: var(--accent3);
+    border: 1px solid rgba(122,184,160,0.3);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .es-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  /* ─── TOOLTIP / HINT ─── */
+  .hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* ─── RANGE SLIDER ─── */
+  .range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .range-wrap input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  .range-wrap input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .range-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    min-width: 44px;
+    text-align: right;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 22px;
+  }
+
+  /* ─── TAGS ─── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(232,200,122,0.1);
+    border: 1px solid rgba(232,200,122,0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* scroll bar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">🔆</div>
+    <div class="logo-text">
+      <h1>Laser Studio</h1>
+      <p>Calculadora de Costos &amp; Proyectos</p>
+    </div>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('calc')">⚙️ Calculadora</button>
+    <button class="nav-tab" onclick="showPage('config')">🏭 Mi Taller</button>
+    <button class="nav-tab" onclick="showPage('projects')">📁 Proyectos</button>
+    <button class="nav-tab" onclick="showPage('guide')">📖 Guía</button>
+  </nav>
+</header>
+
+<main class="app">
+
+  <!-- ══════════════════════════════════════
+       PAGE: CALCULADORA
+  ══════════════════════════════════════ -->
+  <div id="page-calc" class="page active">
+    <div class="section-header">
+      <h2>Nueva Cotización</h2>
+      <p>Calculá el precio de venta de tu producto en base a todos los costos reales.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;">
+
+      <!-- LEFT: FORMULARIO -->
+      <div>
+
+        <!-- Identificación del producto -->
+        <div class="card">
+          <div class="card-title"><span>🎨</span> Datos del Producto</div>
+          <div class="grid-2" style="margin-bottom:14px;">
+            <div class="field">
+              <label>Nombre del producto</label>
+              <div class="field-wrap">
+                <input type="text" id="p_nombre" placeholder="Ej: Cuadro árbol genealógico">
+              </div>
+            </div>
+            <div class="field">
+              <label>Material</label>
+              <div class="field-wrap">
+                <select id="p_material" onchange="calcularTodo()">
+                  <option value="">-- Seleccionar --</option>
+                  <option value="mdf">MDF</option>
+                  <option value="madera">Madera</option>
+                  <option value="acrilico">Acrílico</option>
+                  <option value="cuero">Cuero</option>
+                  <option value="vidrio">Vidrio</option>
+                  <option value="tela">Tela / Textil</option>
+                  <option value="ceramica">Cerámica / Porcelana</option>
+                  <option value="metal">Metal / Aluminio</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Descripción / notas</label>
+            <textarea id="p_desc" placeholder="Personalizaciones, colores, cantidad de capas, etc."></textarea>
+          </div>
+        </div>
+
+        <!-- DIMENSIONES y MATERIALES -->
+        <div class="card">
+          <div class="card-title"><span>📐</span> Dimensiones y Costo de Materiales</div>
+
+          <div class="grid-3" style="margin-bottom:14px;">
+            <div class="field">
+              <label>Ancho (cm)</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_ancho" value="30" min="1" oninput="calcularTodo()">
+                <span class="suffix">cm</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Alto (cm)</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_alto" value="20" min="1" oninput="calcularTodo()">
+                <span class="suffix">cm</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Cantidad</label>
+              <div class="field-wrap">
+                <input type="number" id="p_qty" value="1" min="1" oninput="calcularTodo()">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="field">
+              <label>Costo material ($ / cm²)</label>
+              <div class="field-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input type="number" id="p_mat_cm2" value="0.5" step="0.01" min="0" oninput="calcularTodo()">
+              </div>
+              <span class="hint">Precio por cm² del material base</span>
+            </div>
+            <div class="field">
+              <label>Costo de pintura / acabado</label>
+              <div class="field-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input type="number" id="p_pintura" value="0" step="0.01" min="0" oninput="calcularTodo()">
+              </div>
+              <span class="hint">Total de pintura para esta pieza</span>
+            </div>
+            <div class="field">
+              <label>Insumos adicionales</label>
+              <div class="field-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input type="number" id="p_insumos" value="0" step="0.01" min="0" oninput="calcularTodo()">
+              </div>
+              <span class="hint">Marcos, herrajes, embalaje, etc.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIEMPO DE TRABAJO -->
+        <div class="card">
+          <div class="card-title"><span>⏱️</span> Tiempo de Trabajo</div>
+          <div class="grid-3">
+            <div class="field">
+              <label>Horas de diseño / prep.</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_hs_diseño" value="1" step="0.25" min="0" oninput="calcularTodo()">
+                <span class="suffix">hs</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Horas de grabado (laser)</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_hs_laser" value="0.5" step="0.25" min="0" oninput="calcularTodo()">
+                <span class="suffix">hs</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Horas de pintura / post</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_hs_pintura" value="1" step="0.25" min="0" oninput="calcularTodo()">
+                <span class="suffix">hs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MARGEN DE GANANCIA -->
+        <div class="card">
+          <div class="card-title"><span>📈</span> Precio y Margen</div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Margen de ganancia</label>
+              <div class="range-wrap">
+                <input type="range" id="p_margen" min="10" max="300" value="60" step="5" oninput="syncMargen(this.value)">
+                <span class="range-val" id="margen-display">60%</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>O ingresá el margen exacto</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_margen_num" value="60" min="0" max="999" oninput="syncMargenNum(this.value)">
+                <span class="suffix">%</span>
+              </div>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="grid-2">
+            <div class="field">
+              <label>Precio mínimo (piso)</label>
+              <div class="field-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input type="number" id="p_precio_min" value="0" step="100" min="0" oninput="calcularTodo()">
+              </div>
+              <span class="hint">Si querés asegurar un precio mínimo</span>
+            </div>
+            <div class="field">
+              <label>Descuento / ajuste manual</label>
+              <div class="field-wrap has-suffix">
+                <input type="number" id="p_descuento" value="0" step="1" min="0" max="99" oninput="calcularTodo()">
+                <span class="suffix">%</span>
+              </div>
+              <span class="hint">Descuento sobre precio final</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /LEFT -->
+
+      <!-- RIGHT: RESULTADO -->
+      <div style="position:sticky;top:90px;">
+        <div class="card" style="background:linear-gradient(160deg,#1f1c14,#151309);">
+          <div class="card-title"><span>💰</span> Resultado</div>
+
+          <div id="result-main" style="margin-bottom:20px;">
+            <div class="result-box highlight" style="margin-bottom:12px;">
+              <div class="label">Precio de venta sugerido</div>
+              <div class="value" id="r_precio_venta">$0</div>
+              <div class="sub" id="r_precio_sub">por unidad</div>
+            </div>
+            <div class="grid-2" style="gap:10px;">
+              <div class="result-box">
+                <div class="label">Costo total</div>
+                <div class="value" id="r_costo_total" style="font-size:18px;">$0</div>
+              </div>
+              <div class="result-box success">
+                <div class="label">Ganancia neta</div>
+                <div class="value" id="r_ganancia" style="font-size:18px;">$0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desglose -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:10px;">Desglose de costos</div>
+            <table class="breakdown" id="breakdown-table">
+              <tr><td colspan="2" class="bd-category">Materiales</td></tr>
+              <tr><td>Material base</td><td id="bd_mat">$0</td></tr>
+              <tr><td>Pintura / acabado</td><td id="bd_pintura">$0</td></tr>
+              <tr><td>Insumos adicionales</td><td id="bd_insumos">$0</td></tr>
+              <tr><td colspan="2" class="bd-category">Mano de obra</td></tr>
+              <tr><td>Diseño / preparación</td><td id="bd_mdo_dis">$0</td></tr>
+              <tr><td>Operación laser</td><td id="bd_mdo_las">$0</td></tr>
+              <tr><td>Pintura / post</td><td id="bd_mdo_pin">$0</td></tr>
+              <tr><td colspan="2" class="bd-category">Costos fijos prorrateados</td></tr>
+              <tr><td>Electricidad (laser)</td><td id="bd_elec">$0</td></tr>
+              <tr><td>Amortización máquina</td><td id="bd_amorti">$0</td></tr>
+              <tr><td>Gastos generales</td><td id="bd_gastos">$0</td></tr>
+              <tr class="bd-total">
+                <td>COSTO TOTAL</td>
+                <td id="bd_total">$0</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="guardarProyecto()" style="flex:1;">💾 Guardar proyecto</button>
+            <button class="btn btn-secondary btn-sm" onclick="limpiarForm()">🗑 Limpiar</button>
+          </div>
+
+          <div id="edit-indicator" style="display:none;margin-top:10px;">
+            <div class="tag">✏️ Editando: <span id="edit-name"></span></div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%;" onclick="cancelarEdicion()">Cancelar edición</button>
+          </div>
+        </div>
+      </div><!-- /RIGHT -->
+
+    </div>
+  </div><!-- /page-calc -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: CONFIG (Mi Taller)
+  ══════════════════════════════════════ -->
+  <div id="page-config" class="page">
+    <div class="section-header">
+      <h2>Mi Taller</h2>
+      <p>Configurá los costos fijos de tu taller. Se usan automáticamente en cada cotización.</p>
+    </div>
+
+    <!-- MÁQUINA -->
+    <div class="card">
+      <div class="card-title"><span>⚡</span> Máquina Laser</div>
+      <div class="grid-4">
+        <div class="field">
+          <label>Costo de la máquina</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_costo_maquina" value="500000" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Vida útil estimada</label>
+          <div class="field-wrap has-suffix">
+            <input type="number" id="cfg_vida_util" value="5" min="1" max="30" oninput="guardarConfig();calcularTodo()">
+            <span class="suffix">años</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Consumo eléctrico</label>
+          <div class="field-wrap has-suffix">
+            <input type="number" id="cfg_consumo_w" value="300" min="1" oninput="guardarConfig();calcularTodo()">
+            <span class="suffix">W</span>
+          </div>
+          <span class="hint">Potencia de la máquina en Watts</span>
+        </div>
+        <div class="field">
+          <label>Tarifa eléctrica</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_kwh" value="90" step="0.01" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">$ por kWh en tu zona</span>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="grid-4">
+        <div class="field">
+          <label>Mantenimiento anual</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_mantenimiento" value="30000" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">Repuestos, servicio técnico</span>
+        </div>
+        <div class="field">
+          <label>Horas de uso mensual</label>
+          <div class="field-wrap has-suffix">
+            <input type="number" id="cfg_hs_mes" value="80" min="1" oninput="guardarConfig();calcularTodo()">
+            <span class="suffix">hs</span>
+          </div>
+          <span class="hint">Promedio real de uso</span>
+        </div>
+        <div class="field" style="grid-column:span 2;">
+          <!-- espacio -->
+        </div>
+      </div>
+    </div>
+
+    <!-- COSTOS FIJOS DEL NEGOCIO -->
+    <div class="card">
+      <div class="card-title"><span>🏠</span> Costos Fijos Mensuales del Negocio</div>
+      <div class="grid-4">
+        <div class="field">
+          <label>Alquiler / renta</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_alquiler" value="0" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Sueldo / retiro propio</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_sueldo" value="200000" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">Lo que querés ganar por mes</span>
+        </div>
+        <div class="field">
+          <label>Publicidad / redes</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_publicidad" value="10000" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Otros gastos fijos</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_otros" value="20000" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">Internet, envíos, contaduría, etc.</span>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="grid-3">
+        <div class="field">
+          <label>Productos que vendés por mes</label>
+          <div class="field-wrap">
+            <input type="number" id="cfg_productos_mes" value="20" min="1" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">Estimado de unidades vendidas</span>
+        </div>
+        <div class="field">
+          <label>Tarifa de mano de obra ($/hora)</label>
+          <div class="field-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="cfg_tarifa_hora" value="0" min="0" oninput="guardarConfig();calcularTodo()">
+          </div>
+          <span class="hint">0 = se calcula del sueldo mensual</span>
+        </div>
+        <div class="field">
+          <label>Horas laborales por mes</label>
+          <div class="field-wrap has-suffix">
+            <input type="number" id="cfg_hs_laborales" value="160" min="1" oninput="guardarConfig();calcularTodo()">
+            <span class="suffix">hs</span>
+          </div>
+          <span class="hint">Para calcular tu valor hora</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN DE CONFIGURACIÓN -->
+    <div class="card">
+      <div class="card-title"><span>📊</span> Resumen de tu estructura de costos</div>
+      <div class="grid-4">
+        <div class="result-box">
+          <div class="label">Tu valor / hora</div>
+          <div class="value" id="cfg_r_valor_hora" style="font-size:18px;">$0</div>
+        </div>
+        <div class="result-box">
+          <div class="label">Costo laser / hora</div>
+          <div class="value" id="cfg_r_laser_hora" style="font-size:18px;">$0</div>
+        </div>
+        <div class="result-box">
+          <div class="label">Gastos fijos / producto</div>
+          <div class="value" id="cfg_r_fijos_prod" style="font-size:18px;">$0</div>
+        </div>
+        <div class="result-box">
+          <div class="label">Total mensual fijo</div>
+          <div class="value" id="cfg_r_total_mensual" style="font-size:18px;">$0</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-config -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: PROYECTOS
+  ══════════════════════════════════════ -->
+  <div id="page-projects" class="page">
+    <div class="section-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2>Mis Proyectos</h2>
+        <p>Todos tus trabajos guardados. Podés editarlos, duplicarlos o eliminarlos.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="exportarTodo()">⬇️ Exportar todo</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()">⬆️ Importar</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importarTodo(event)">
+        <button class="btn btn-primary" onclick="showPage('calc')">＋ Nueva cotización</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:20px;" id="proj-stats">
+      <div class="result-box"><div class="label">Total proyectos</div><div class="value" id="stat-total" style="font-size:22px;">0</div></div>
+      <div class="result-box"><div class="label">Ingresos estimados</div><div class="value" id="stat-ingresos" style="font-size:18px;">$0</div></div>
+      <div class="result-box success"><div class="label">Ganancia estimada</div><div class="value" id="stat-ganancia" style="font-size:18px;">$0</div></div>
+      <div class="result-box"><div class="label">Precio promedio</div><div class="value" id="stat-promedio" style="font-size:18px;">$0</div></div>
+    </div>
+
+    <!-- Filtro/búsqueda -->
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <div class="field-wrap" style="flex:1;min-width:200px;">
+        <input type="text" id="search-projects" placeholder="🔍  Buscar por nombre o material..." oninput="renderProjects()" style="width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Nunito,sans-serif;font-size:13px;outline:none;">
+      </div>
+      <select id="sort-projects" onchange="renderProjects()" style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Nunito,sans-serif;font-size:13px;outline:none;">
+        <option value="fecha-desc">Más recientes primero</option>
+        <option value="fecha-asc">Más antiguos primero</option>
+        <option value="precio-desc">Mayor precio</option>
+        <option value="precio-asc">Menor precio</option>
+        <option value="nombre">Por nombre</option>
+      </select>
+    </div>
+
+    <div class="project-grid" id="projects-container">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="es-icon">📁</div>
+        <h3>Todavía no tenés proyectos</h3>
+        <p>Crea tu primera cotización desde la Calculadora</p>
+      </div>
+    </div>
+  </div><!-- /page-projects -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: GUÍA
+  ══════════════════════════════════════ -->
+  <div id="page-guide" class="page">
+    <div class="section-header">
+      <h2>Guía de uso</h2>
+      <p>Todo lo que necesitás saber para ponerle precio justo a tu trabajo.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-title"><span>1️⃣</span> Configurá tu taller primero</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          Antes de cotizar, andá a <strong style="color:var(--accent)">Mi Taller</strong> y cargá:
+          <br>• El costo y vida útil de tu laser
+          <br>• Tu sueldo o retiro mensual deseado
+          <br>• Todos los gastos fijos del negocio
+          <br>• Cuántos productos vendés por mes
+          <br><br>Esto permite que la calculadora distribuya automáticamente los costos fijos en cada producto.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>2️⃣</span> Cotizá cada producto</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          En la <strong style="color:var(--accent)">Calculadora</strong> ingresá:
+          <br>• Dimensiones del material
+          <br>• Costo por cm² del material
+          <br>• Pintura, marcos, y otros insumos
+          <br>• Horas de trabajo separadas por tipo
+          <br>• El margen de ganancia que querés
+          <br><br>El precio de venta se calcula en tiempo real.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>3️⃣</span> Guardá tus proyectos</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          Hacé clic en <strong style="color:var(--accent)">💾 Guardar proyecto</strong> para guardarlo en tu carpeta.
+          <br><br>Desde <strong style="color:var(--accent)">Proyectos</strong> podés:
+          <br>• Ver todos tus trabajos
+          <br>• Editarlos (cambia los materiales, margen, etc.)
+          <br>• Duplicar trabajos similares
+          <br>• Eliminar los que ya no usás
+          <br>• Exportar todo a JSON para hacer backup
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>💡</span> Consejo: el margen de ganancia</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          El margen de ganancia se aplica <em>sobre el costo total</em>. Algunos ejemplos:
+          <br><br>
+          <strong style="color:var(--accent)">50%</strong> → vendés a 1.5× el costo<br>
+          <strong style="color:var(--accent)">100%</strong> → vendés a 2× el costo (markup del 100%)<br>
+          <strong style="color:var(--accent)">150%</strong> → vendés a 2.5× el costo<br>
+          <br>
+          Para productos artesanales y personalizados, <strong style="color:var(--accent)">60–120% de margen</strong> es un rango habitual y saludable.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>⚡</span> Cómo calcular el costo de materiales por cm²</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          Ejemplo: plancha de MDF de 60×40 cm (2400 cm²) que te costó $3.000.<br>
+          <br>
+          <strong style="color:var(--accent)">$3.000 ÷ 2400 cm² = $1,25 por cm²</strong>
+          <br><br>
+          Usás ese valor en el campo "Costo material ($/cm²)" de la calculadora. Así el costo se adapta automáticamente al tamaño de cada pieza.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>💾</span> Backup de tus datos</div>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">
+          Todos los datos se guardan en el navegador (localStorage). Para hacer backup:
+          <br><br>
+          1. Andá a <strong style="color:var(--accent)">Proyectos</strong><br>
+          2. Hacé clic en <strong style="color:var(--accent)">⬇️ Exportar todo</strong><br>
+          3. Guardá el archivo .json en un lugar seguro<br>
+          4. Cuando necesites restaurar, usá <strong style="color:var(--accent)">⬆️ Importar</strong>
+          <br><br>
+          <strong style="color:var(--danger)">Atención:</strong> si limpiás el historial del navegador, se borran los datos. ¡Hacé backup seguido!
+        </p>
+      </div>
+    </div>
+  </div><!-- /page-guide -->
+
+</main>
+
+<!-- MODAL: Confirmar eliminación -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <h3>🗑 ¿Eliminar proyecto?</h3>
+    <p style="color:var(--text-muted);font-size:13px;">Esta acción no se puede deshacer. ¿Estás segura?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Guardado!</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let editingId = null;
+let deleteTargetId = null;
+
+const CFG_KEY = 'laser_config';
+const PROJ_KEY = 'laser_projects';
+
+// ═══════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const tabs = { calc:0, config:1, projects:2, guide:3 };
+  document.querySelectorAll('.nav-tab')[tabs[id]].classList.add('active');
+  if (id === 'projects') renderProjects();
+  if (id === 'config') updateConfigSummary();
+}
+
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+function getConfig() {
+  const saved = localStorage.getItem(CFG_KEY);
+  if (saved) {
+    const cfg = JSON.parse(saved);
+    Object.keys(cfg).forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.value = cfg[k];
+    });
+  }
+}
+
+function guardarConfig() {
+  const ids = [
+    'cfg_costo_maquina','cfg_vida_util','cfg_consumo_w','cfg_kwh',
+    'cfg_mantenimiento','cfg_hs_mes','cfg_alquiler','cfg_sueldo',
+    'cfg_publicidad','cfg_otros','cfg_productos_mes','cfg_tarifa_hora',
+    'cfg_hs_laborales'
+  ];
+  const cfg = {};
+  ids.forEach(id => { cfg[id] = parseFloat(document.getElementById(id).value)||0; });
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  updateConfigSummary();
+}
+
+function getVal(id) { return parseFloat(document.getElementById(id).value)||0; }
+
+function getCostosBase() {
+  const costoMaquina = getVal('cfg_costo_maquina');
+  const vidaUtil = getVal('cfg_vida_util') * 12; // meses
+  const consumoW = getVal('cfg_consumo_w');
+  const kwh = getVal('cfg_kwh');
+  const mantenimiento = getVal('cfg_mantenimiento') / 12; // por mes
+  const hsMes = getVal('cfg_hs_mes');
+  const alquiler = getVal('cfg_alquiler');
+  const sueldo = getVal('cfg_sueldo');
+  const publicidad = getVal('cfg_publicidad');
+  const otros = getVal('cfg_otros');
+  const prodMes = getVal('cfg_productos_mes') || 1;
+  const hsLaborales = getVal('cfg_hs_laborales') || 160;
+  const tarifaHoraManual = getVal('cfg_tarifa_hora');
+
+  // Valor hora
+  const valorHora = tarifaHoraManual > 0 ? tarifaHoraManual : (sueldo / hsLaborales);
+
+  // Amortización por hora de uso
+  const amortizacion = vidaUtil > 0 ? (costoMaquina / vidaUtil / hsMes) : 0;
+
+  // Electricidad por hora
+  const elecHora = (consumoW / 1000) * kwh;
+
+  // Mantenimiento por hora
+  const mantHora = hsMes > 0 ? (mantenimiento / hsMes) : 0;
+
+  // Costo laser por hora (electricidad + amortización + mantenimiento)
+  const costoLaserHora = elecHora + amortizacion + mantHora;
+
+  // Gastos fijos totales mensuales (sin sueldo, que ya va a valor hora)
+  const gastosFijosMes = alquiler + publicidad + otros;
+
+  // Gasto fijo por producto
+  const gastoFijoProd = gastosFijosMes / prodMes;
+
+  return { valorHora, costoLaserHora, gastoFijoProd, amortizacion, elecHora, mantHora,
+           gastosFijosMes, sueldo, prodMes };
+}
+
+function updateConfigSummary() {
+  const b = getCostosBase();
+  const totalMensual = getVal('cfg_sueldo') + getVal('cfg_alquiler') +
+    getVal('cfg_publicidad') + getVal('cfg_otros') +
+    (getVal('cfg_mantenimiento')/12);
+
+  setText('cfg_r_valor_hora', fmt(b.valorHora));
+  setText('cfg_r_laser_hora', fmt(b.costoLaserHora));
+  setText('cfg_r_fijos_prod', fmt(b.gastoFijoProd));
+  setText('cfg_r_total_mensual', fmt(totalMensual));
+}
+
+// ═══════════════════════════════════════════
+// CALCULADORA
+// ═══════════════════════════════════════════
+function syncMargen(v) {
+  document.getElementById('p_margen_num').value = v;
+  document.getElementById('margen-display').textContent = v + '%';
+  calcularTodo();
+}
+function syncMargenNum(v) {
+  v = Math.min(999, Math.max(0, parseFloat(v)||0));
+  const slider = document.getElementById('p_margen');
+  slider.value = Math.min(300, v);
+  document.getElementById('margen-display').textContent = v + '%';
+  calcularTodo();
+}
+
+function calcularTodo() {
+  const b = getCostosBase();
+
+  const ancho = getVal('p_ancho');
+  const alto = getVal('p_alto');
+  const qty = getVal('p_qty') || 1;
+  const area = ancho * alto * qty;
+
+  const matCm2 = getVal('p_mat_cm2');
+  const pintura = getVal('p_pintura');
+  const insumos = getVal('p_insumos');
+
+  const hsDis = getVal('p_hs_diseño');
+  const hsLas = getVal('p_hs_laser');
+  const hsPin = getVal('p_hs_pintura');
+
+  const margen = parseFloat(document.getElementById('p_margen_num').value)||0;
+  const precioMin = getVal('p_precio_min');
+  const descuento = getVal('p_descuento');
+
+  // COSTOS
+  const cMat = area * matCm2;
+  const cPintura = pintura;
+  const cInsumos = insumos;
+  const cMdoDis = hsDis * b.valorHora;
+  const cMdoLas = hsLas * b.valorHora;
+  const cMdoPin = hsPin * b.valorHora;
+  const cElec = hsLas * b.elecHora;
+  const cAmorti = hsLas * (b.amortizacion + b.mantHora);
+  const cGastos = b.gastoFijoProd;
+
+  const costoTotal = cMat + cPintura + cInsumos + cMdoDis + cMdoLas + cMdoPin + cElec + cAmorti + cGastos;
+
+  let precioVenta = costoTotal * (1 + margen / 100);
+  if (precioVenta < precioMin) precioVenta = precioMin;
+  if (descuento > 0) precioVenta = precioVenta * (1 - descuento / 100);
+
+  const ganancia = precioVenta - costoTotal;
+
+  // Display
+  setText('r_precio_venta', fmt(precioVenta));
+  setText('r_costo_total', fmt(costoTotal));
+  setText('r_ganancia', fmt(ganancia));
+  setText('r_precio_sub', qty > 1 ? `por unidad · ${qty} unidades` : 'por unidad');
+
+  setText('bd_mat', fmt(cMat));
+  setText('bd_pintura', fmt(cPintura));
+  setText('bd_insumos', fmt(cInsumos));
+  setText('bd_mdo_dis', fmt(cMdoDis));
+  setText('bd_mdo_las', fmt(cMdoLas));
+  setText('bd_mdo_pin', fmt(cMdoPin));
+  setText('bd_elec', fmt(cElec));
+  setText('bd_amorti', fmt(cAmorti));
+  setText('bd_gastos', fmt(cGastos));
+  setText('bd_total', fmt(costoTotal));
+}
+
+// ═══════════════════════════════════════════
+// PROYECTOS
+// ═══════════════════════════════════════════
+function getProjects() {
+  return JSON.parse(localStorage.getItem(PROJ_KEY) || '[]');
+}
+function saveProjects(arr) {
+  localStorage.setItem(PROJ_KEY, JSON.stringify(arr));
+}
+
+function snapshotCalc() {
+  const b = getCostosBase();
+  const ancho = getVal('p_ancho');
+  const alto = getVal('p_alto');
+  const qty = getVal('p_qty') || 1;
+  const area = ancho * alto * qty;
+  const matCm2 = getVal('p_mat_cm2');
+  const pintura = getVal('p_pintura');
+  const insumos = getVal('p_insumos');
+  const hsDis = getVal('p_hs_diseño');
+  const hsLas = getVal('p_hs_laser');
+  const hsPin = getVal('p_hs_pintura');
+  const margen = parseFloat(document.getElementById('p_margen_num').value)||0;
+  const precioMin = getVal('p_precio_min');
+  const descuento = getVal('p_descuento');
+  const cMat = area * matCm2;
+  const cPintura = pintura;
+  const cInsumos = insumos;
+  const cMdoDis = hsDis * b.valorHora;
+  const cMdoLas = hsLas * b.valorHora;
+  const cMdoPin = hsPin * b.valorHora;
+  const cElec = hsLas * b.elecHora;
+  const cAmorti = hsLas * (b.amortizacion + b.mantHora);
+  const cGastos = b.gastoFijoProd;
+  const costoTotal = cMat + cPintura + cInsumos + cMdoDis + cMdoLas + cMdoPin + cElec + cAmorti + cGastos;
+  let precioVenta = costoTotal * (1 + margen / 100);
+  if (precioVenta < precioMin) precioVenta = precioMin;
+  if (descuento > 0) precioVenta = precioVenta * (1 - descuento / 100);
+  return {
+    nombre: document.getElementById('p_nombre').value || 'Sin nombre',
+    material: document.getElementById('p_material').value,
+    descripcion: document.getElementById('p_desc').value,
+    ancho, alto, qty, matCm2, pintura, insumos, hsDis, hsLas, hsPin,
+    margen, precioMin, descuento,
+    costoTotal, precioVenta,
+    ganancia: precioVenta - costoTotal
+  };
+}
+
+function guardarProyecto() {
+  const data = snapshotCalc();
+  if (!data.nombre.trim() || data.nombre === 'Sin nombre') {
+    document.getElementById('p_nombre').focus();
+    toast('⚠️ Poné un nombre al producto', true);
+    return;
+  }
+  const projects = getProjects();
+  if (editingId !== null) {
+    const idx = projects.findIndex(p => p.id === editingId);
+    if (idx > -1) {
+      projects[idx] = { ...data, id: editingId, fechaMod: new Date().toISOString(), fechaCreacion: projects[idx].fechaCreacion };
+    }
+    editingId = null;
+    document.getElementById('edit-indicator').style.display = 'none';
+    toast('✅ Proyecto actualizado!');
+  } else {
+    const newProj = { ...data, id: Date.now(), fechaCreacion: new Date().toISOString(), fechaMod: new Date().toISOString() };
+    projects.push(newProj);
+    toast('💾 Proyecto guardado!');
+  }
+  saveProjects(projects);
+}
+
+function loadProjectToCalc(id) {
+  const projects = getProjects();
+  const p = projects.find(pr => pr.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('p_nombre').value = p.nombre;
+  document.getElementById('p_material').value = p.material || '';
+  document.getElementById('p_desc').value = p.descripcion || '';
+  document.getElementById('p_ancho').value = p.ancho;
+  document.getElementById('p_alto').value = p.alto;
+  document.getElementById('p_qty').value = p.qty;
+  document.getElementById('p_mat_cm2').value = p.matCm2;
+  document.getElementById('p_pintura').value = p.pintura;
+  document.getElementById('p_insumos').value = p.insumos;
+  document.getElementById('p_hs_diseño').value = p.hsDis;
+  document.getElementById('p_hs_laser').value = p.hsLas;
+  document.getElementById('p_hs_pintura').value = p.hsPin;
+  document.getElementById('p_margen_num').value = p.margen;
+  document.getElementById('p_margen').value = Math.min(300, p.margen);
+  document.getElementById('margen-display').textContent = p.margen + '%';
+  document.getElementById('p_precio_min').value = p.precioMin || 0;
+  document.getElementById('p_descuento').value = p.descuento || 0;
+  document.getElementById('edit-indicator').style.display = 'block';
+  document.getElementById('edit-name').textContent = p.nombre;
+  calcularTodo();
+  showPage('calc');
+  toast('✏️ Editando: ' + p.nombre);
+}
+
+function duplicarProyecto(id) {
+  const projects = getProjects();
+  const p = projects.find(pr => pr.id === id);
+  if (!p) return;
+  const copy = { ...p, id: Date.now(), nombre: p.nombre + ' (copia)', fechaCreacion: new Date().toISOString(), fechaMod: new Date().toISOString() };
+  projects.push(copy);
+  saveProjects(projects);
+  renderProjects();
+  toast('📋 Proyecto duplicado!');
+}
+
+function confirmarEliminar(id) {
+  deleteTargetId = id;
+  document.getElementById('modal-delete').classList.add('open');
+}
+
+document.getElementById('confirm-delete-btn').onclick = function() {
+  if (deleteTargetId === null) return;
+  const projects = getProjects().filter(p => p.id !== deleteTargetId);
+  saveProjects(projects);
+  deleteTargetId = null;
+  closeModal('modal-delete');
+  renderProjects();
+  toast('🗑 Proyecto eliminado');
+};
+
+function cancelarEdicion() {
+  editingId = null;
+  document.getElementById('edit-indicator').style.display = 'none';
+  limpiarForm();
+}
+
+function limpiarForm() {
+  document.getElementById('p_nombre').value = '';
+  document.getElementById('p_material').value = '';
+  document.getElementById('p_desc').value = '';
+  document.getElementById('p_ancho').value = 30;
+  document.getElementById('p_alto').value = 20;
+  document.getElementById('p_qty').value = 1;
+  document.getElementById('p_mat_cm2').value = 0.5;
+  document.getElementById('p_pintura').value = 0;
+  document.getElementById('p_insumos').value = 0;
+  document.getElementById('p_hs_diseño').value = 1;
+  document.getElementById('p_hs_laser').value = 0.5;
+  document.getElementById('p_hs_pintura').value = 1;
+  document.getElementById('p_margen_num').value = 60;
+  document.getElementById('p_margen').value = 60;
+  document.getElementById('margen-display').textContent = '60%';
+  document.getElementById('p_precio_min').value = 0;
+  document.getElementById('p_descuento').value = 0;
+  calcularTodo();
+}
+
+function renderProjects() {
+  let projects = getProjects();
+  const search = (document.getElementById('search-projects').value || '').toLowerCase();
+  const sort = document.getElementById('sort-projects').value;
+
+  if (search) {
+    projects = projects.filter(p =>
+      p.nombre.toLowerCase().includes(search) ||
+      (p.material||'').toLowerCase().includes(search) ||
+      (p.descripcion||'').toLowerCase().includes(search)
+    );
+  }
+
+  projects.sort((a,b) => {
+    if (sort === 'fecha-desc') return new Date(b.fechaMod) - new Date(a.fechaMod);
+    if (sort === 'fecha-asc') return new Date(a.fechaMod) - new Date(b.fechaMod);
+    if (sort === 'precio-desc') return b.precioVenta - a.precioVenta;
+    if (sort === 'precio-asc') return a.precioVenta - b.precioVenta;
+    if (sort === 'nombre') return a.nombre.localeCompare(b.nombre);
+    return 0;
+  });
+
+  const all = getProjects();
+  const totalIngresos = all.reduce((s,p)=>s+p.precioVenta,0);
+  const totalGanancia = all.reduce((s,p)=>s+p.ganancia,0);
+  const avgPrecio = all.length ? totalIngresos / all.length : 0;
+  setText('stat-total', all.length);
+  setText('stat-ingresos', fmt(totalIngresos));
+  setText('stat-ganancia', fmt(totalGanancia));
+  setText('stat-promedio', fmt(avgPrecio));
+
+  const container = document.getElementById('projects-container');
+  if (projects.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="es-icon">🔍</div><h3>Sin resultados</h3><p>Probá con otro término de búsqueda</p></div>`;
+    return;
+  }
+
+  const materials = { mdf:'MDF', madera:'Madera', acrilico:'Acrílico', cuero:'Cuero', vidrio:'Vidrio', tela:'Textil', ceramica:'Cerámica', metal:'Metal', otro:'Otro', '':'General' };
+
+  container.innerHTML = projects.map(p => {
+    const fecha = new Date(p.fechaMod).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+    const margenReal = p.costoTotal > 0 ? Math.round((p.ganancia / p.costoTotal)*100) : 0;
+    return `
+      <div class="project-card" onclick="loadProjectToCalc(${p.id})">
+        <div class="pc-actions">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();duplicarProyecto(${p.id})" title="Duplicar">📋</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmarEliminar(${p.id})" title="Eliminar">🗑</button>
+        </div>
+        <div class="pc-name">${escHtml(p.nombre)}</div>
+        <div class="pc-meta">${materials[p.material]||'General'} · ${p.ancho}×${p.alto} cm · ${fecha}</div>
+        <div class="pc-price">${fmt(p.precioVenta)}</div>
+        <div class="pc-cost">Costo: ${fmt(p.costoTotal)} · Ganancia: ${fmt(p.ganancia)}</div>
+        <div class="pc-badge">+${margenReal}% margen</div>
+      </div>`;
+  }).join('');
+}
+
+function exportarTodo() {
+  const data = {
+    version: '1.0',
+    exportado: new Date().toISOString(),
+    config: JSON.parse(localStorage.getItem(CFG_KEY)||'{}'),
+    projects: getProjects()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'laser-studio-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('⬇️ Backup exportado!');
+}
+
+function importarTodo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.projects) {
+        const existing = getProjects();
+        const merged = [...existing];
+        data.projects.forEach(p => {
+          if (!merged.find(x => x.id === p.id)) merged.push(p);
+        });
+        saveProjects(merged);
+      }
+      if (data.config) {
+        localStorage.setItem(CFG_KEY, JSON.stringify(data.config));
+        getConfig();
+      }
+      renderProjects();
+      toast('⬆️ Importación completada!');
+    } catch(err) {
+      toast('❌ Error al importar el archivo', true);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function fmt(n) {
+  if (isNaN(n)) return '$0';
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+let toastTimeout;
+function toast(msg, error=false) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  m.textContent = msg;
+  t.style.background = error ? 'var(--danger)' : 'var(--accent)';
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  getConfig();
+  calcularTodo();
+  updateConfigSummary();
+});
+</script>
+</body>
+</html>
